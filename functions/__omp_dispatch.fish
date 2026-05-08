@@ -9,17 +9,22 @@ function __omp_dispatch -d "Parse and dispatch :commands"
         # `: <prompt>` - it's a prompt, strip leading `: ` and pass to omp
         set -l prompt (string replace -r '^: \s*' '' -- $input)
         __omp_exec_session $prompt
+        return $status
     else if string match -rq '^:\w' -- $input
         # `:command` - it's a subcommand
-        set -l cmd (string replace -r '^:(\w+).*' '$1' -- $input)
+        set -l match (string match -r '^:(\w+)' -- $input)
+        set -l cmd $match[2]
 
         switch $cmd
             case 's'
                 set -l prompt (string replace -r '^:s\s+' '' -- $input)
                 __omp_exec_stateless $prompt
+                return $status
 
             case 'new'
-                __omp_exec_session "Please clear the conversation context and be ready for a fresh start."
+                set -g __omp_new_session 1
+                echo "[omp] New session will start on next prompt."
+                return 0
 
             case 'commit'
                 set -l args (string replace -r '^:commit\s*' '' -- $input)
@@ -28,9 +33,11 @@ function __omp_dispatch -d "Parse and dispatch :commands"
                 else
                     omp commit
                 end
+                return $status
 
             case 'stats'
                 omp stats
+                return $status
 
             case 'help'
                 echo "omp-fish commands:"
@@ -49,5 +56,6 @@ function __omp_dispatch -d "Parse and dispatch :commands"
     else
         # Just `:`, treat as empty prompt
         __omp_exec_session ""
+        return $status
     end
 end
