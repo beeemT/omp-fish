@@ -1,0 +1,36 @@
+#compdef omp
+
+#compdef -p omp
+
+local -a commands
+
+commands=(
+    'new:start a new session'
+    'c:continue with context (prepends last command)'
+    's:suggest a shell command to buffer'
+    'commit:AI-assisted git commit'
+    'stats:show OMP usage statistics'
+    'help:show OMP help'
+)
+
+_arguments -C \
+    '1: :->command' \
+    '*: :->args' \
+    && return 0
+
+case "$state" in
+    command)
+        _describe 'command' commands
+        ;;
+    args)
+        case "$words[1]" in
+            new|commit|help)
+                # These commands may take optional arguments
+                ;;
+            c|s)
+                # These take a prompt as argument
+                _message 'prompt'
+                ;;
+        esac
+        ;;
+esac

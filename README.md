@@ -1,30 +1,48 @@
-# omp-fish
+# omp-zsh
 
-A fish shell plugin for [oh-my-pi](https://github.com/can1357/oh-my-pi) (`omp`). Turns `:`-prefixed commands into omp prompts directly from the fish prompt — no bind hacks, no repaint fights. Just native fish functions.
+A zsh plugin for [oh-my-pi](https://github.com/can1357/oh-my-pi) (`omp`). Turns `:`-prefixed commands into omp prompts directly from your zsh prompt.
 
 ## Requirements
 
-- [fish](https://fishshell.com/) 3.6+
+- [zsh](https://www.zsh.org/) 5.8+
 - [omp](https://github.com/can1357/oh-my-pi) CLI (`omp` on `$PATH`)
 
 ## Install
 
-```fish
-# Copy plugin files into your fish config
-mkdir -p ~/.config/fish/{conf.d,functions,completions}
-cp conf.d/omp.fish ~/.config/fish/conf.d/
-cp functions/*.fish ~/.config/fish/functions/
-cp completions/omp.fish ~/.config/fish/completions/
+```zsh
+# Copy plugin files into your zsh config
+mkdir -p ~/.config/zsh/plugins/omp
+git clone https://github.com/beeemT/omp-zsh.git ~/.config/zsh/plugins/omp
+
+# Add to your .zshrc
+source ~/.config/zsh/plugins/omp/omp.plugin.zsh
 ```
 
-Open a new fish session and you're ready.
+Or using a plugin manager:
+
+**zinit:**
+```zsh
+zinit load beeemT/omp-zsh
+```
+
+**antidote:**
+```zsh
+# In plugins.txt
+beeemT/omp-zsh
+```
+
+**zgen:**
+```zsh
+zgen load beeemT/omp-zsh
+```
 
 ## Usage
 
 | Command | Description |
 |---------|-------------|
 | `: <prompt>` | Start or continue an omp session |
-| `:s <prompt>` | Generate a shell command — output is placed in the buffer, press Enter to run |
+| `:c <prompt>` | Continue session with last command context |
+| `:s <prompt>` | Generate a shell command — output is placed in the buffer |
 | `:new` | Reset session context, start fresh on next prompt |
 | `:commit` | AI-assisted git commit |
 | `:commit --dry-run` | Preview commit without committing |
@@ -33,7 +51,7 @@ Open a new fish session and you're ready.
 
 ### Examples
 
-```fish
+```zsh
 # Start a conversation
 : explain the authentication middleware
 
@@ -43,30 +61,76 @@ Open a new fish session and you're ready.
 # Get a shell command — output lands in your buffer, just press Enter
 :s find all .ts files modified in the last week
 
+# Continue with last command context (prepends last command + exit code)
+:c why did this work
+
 # Start fresh
 :new
 
 # AI commit
 :commit
+
+# Preview commit message
+:commit --dry-run
+```
+
+### Multiline Prompts
+
+Type multiline prompts using Shift+Enter. All lines are sent as a single prompt:
+
+```
+: This is line 1
+This is line 2
+This is line 3
+```
+
+## Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OMP_BIN` | `omp` | Path to OMP CLI binary |
+| `OMP_TERM` | `true` | Enable terminal context capture for `:c` |
+
+```zsh
+# Custom omp binary location
+export OMP_BIN="/path/to/custom/omp"
+
+# Disable terminal context capture
+export OMP_TERM="false"
 ```
 
 ## How it works
 
-Each `:` command is a native fish function. Fish handles execution, output display, history, and prompt cycling the same way it does for any other command. No key bindings, no `commandline` hacks, no repaint timing issues.
+The plugin intercepts `:`-prefixed commands via a ZLE widget and routes them to the OMP CLI:
 
-`:s` captures omp's output and sets it as the commandline buffer content — review the generated command, edit if needed, and press Enter to run it.
+- `: <prompt>` → `omp "<prompt>"` (new session) or `omp -c "<prompt>"` (continue)
+- `:c <prompt>` → `omp -c "<context>\n<prompt>"` (with last command context)
+- `:s <prompt>` → `omp --no-session -p "<prompt>"` (stateless, output to buffer)
+- `:new` → clears session state (no OMP call)
+- `:commit` → `omp commit`
+- `:stats` → `omp stats`
 
-## File structure
+## File Structure
 
 ```
-conf.d/omp.fish                   # Defines :, :s, :new, :commit, :stats, :help
-functions/
-  __omp_exec_session.fish         # Session mode (--continue / new session)
-  __omp_exec_stateless.fish       # Stateless mode (--no-session), captures output
-  __omp_build_context.fish        # Auto-context builder (cwd, shell)
-  __omp_dispatch.fish             # Command parser (used by some internals)
-  __omp_helpers.fish              # Shared utilities
-completions/omp.fish              # TAB completions
+omp-zsh/
+├── omp.plugin.zsh           # Main plugin entry point
+├── lib/
+│   ├── config.zsh           # Configuration variables
+│   ├── dispatcher.zsh       # Main ZLE widget and command routing
+│   ├── helpers.zsh          # Utility functions
+│   ├── context.zsh          # Terminal context capture
+│   ├── bindings.zsh         # Key bindings
+│   ├── completion.zsh       # Completion widget
+│   └── actions/
+│       ├── core.zsh         # :new, :help, default : handling
+│       ├── session.zsh      # :c (continue with context)
+│       ├── suggest.zsh       # :s (command suggestion)
+│       ├── commit.zsh        # :commit, :commit --dry-run
+│       └── stats.zsh         # :stats
+├── completions/
+│   └── _omp                 # Zsh completion function
+└── README.md
 ```
 
 ## License
