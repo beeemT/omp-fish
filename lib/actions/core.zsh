@@ -11,8 +11,6 @@ function _omp_action_new() {
     _OMP_FRESH_SESSION=true
     _OMP_SESSION_STARTED=false
 
-    echo
-
     # If input_text is provided, send it as a new session prompt
     if [[ -n "$input_text" ]]; then
         _omp_exec_interactive "$input_text"
@@ -32,8 +30,6 @@ function _omp_action_help() {
 function _omp_action_default() {
     local user_action="$1"
     local input_text="$2"
-
-    echo
 
     # Check if this is an unknown command or a regular prompt
     if [[ -n "$user_action" ]]; then

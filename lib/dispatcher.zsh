@@ -34,6 +34,12 @@ function omp-accept-line() {
     # Add the original command to history before transformation
     print -s -- "$original_buffer"
 
+    # Clear buffer before running action
+    BUFFER=""
+    CURSOR=0
+    zle -I
+    zle reset-prompt
+
     # Dispatch to appropriate action handler
     case "$user_action" in
         new)
@@ -43,11 +49,6 @@ function omp-accept-line() {
             _omp_action_continue "$input_text"
             ;;
         s)
-            # For :s, clear buffer immediately to prevent display
-            BUFFER=""
-            CURSOR=0
-            zle -I
-            zle reset-prompt
             _omp_action_suggest "$input_text"
             return $?
             ;;
@@ -60,9 +61,11 @@ function omp-accept-line() {
             ;;
         stats)
             _omp_action_stats
+            _omp_reset
             ;;
         help)
             _omp_action_help
+            _omp_reset
             ;;
         *)
             # Default action: : <prompt> or :unknown <prompt>
@@ -70,9 +73,5 @@ function omp-accept-line() {
             ;;
     esac
 
-    local action_status=$?
-
-    # Reset prompt after action completes (not for buffer-modifying actions)
-    _omp_reset
-    return $action_status
+    return 0
 }

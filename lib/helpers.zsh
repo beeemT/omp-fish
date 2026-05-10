@@ -10,22 +10,20 @@ function _omp_exec() {
     "${cmd[@]}"
 }
 
-# Like _omp_exec but connects stdin/stdout to /dev/tty so that interactive
-# prompts work correctly when omp is launched as a child of a ZLE widget.
-# ZLE owns the terminal and replaces the process's stdin/stdout with its own
-# pipes, so without this redirect any interactive input would fail.
+# Execute omp interactively. ZLE widgets take /dev/null as stdin,
+# so we explicitly set stdin to the terminal.
 function _omp_exec_interactive() {
     local -a cmd
     cmd=($_OMP_BIN "$@")
-    "${cmd[@]}" </dev/tty >/dev/tty 2>&1
+    echo
+    "${cmd[@]}" < $TTY
+    zle accept-line
 }
 
 # Reset the prompt state after action completion
 function _omp_reset() {
-    # Clear buffer and reset cursor position
     BUFFER=""
     CURSOR=0
-    # Force widget redraw and prompt reset
     zle -I
     zle reset-prompt
 }

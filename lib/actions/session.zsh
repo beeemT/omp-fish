@@ -8,8 +8,6 @@
 function _omp_action_continue() {
     local input_text="$1"
 
-    echo
-
     # Build context from terminal capture
     local context=$(_omp_build_context)
 
