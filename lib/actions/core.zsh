@@ -15,7 +15,11 @@ function _omp_action_new() {
     if [[ -n "$input_text" ]]; then
         _omp_exec_interactive "$input_text"
     else
+        echo
         _omp_log info "Starting fresh session. Next ': <prompt>' will create a new session."
+        BUFFER=""
+        CURSOR=0
+        zle accept-line
     fi
 }
 
@@ -34,8 +38,7 @@ function _omp_action_help() {
     echo "  :commit --dry-run  Preview commit message, put git command in buffer"
     echo "  :stats           Show OMP usage statistics"
     echo
-    echo "Multiline: Shift+Enter in normal mode"
-    echo
+    printf "%s" "Multiline: Shift+Enter in normal mode"
     BUFFER=""
     CURSOR=0
     zle accept-line

@@ -68,8 +68,11 @@ function omp-accept-line() {
             if [[ -n "$input_text" ]]; then
                 _omp_action_default "" "$input_text"
             else
+                echo
                 _omp_log warning "Usage: : <prompt>"
-                _omp_reset
+                BUFFER=""
+                CURSOR=0
+                zle accept-line
             fi
             ;;
         *)
@@ -79,8 +82,11 @@ function omp-accept-line() {
                 _omp_action_default "$user_action" "$input_text"
             else
                 # Unknown command with no prompt - print error
+                echo
                 _omp_log warning "Unknown command: :$user_action"
-                _omp_reset
+                BUFFER=""
+                CURSOR=0
+                zle accept-line
             fi
             ;;
     esac

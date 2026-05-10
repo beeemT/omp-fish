@@ -36,21 +36,21 @@ function _omp_reset() {
 # Levels: error, info, success, warning
 function _omp_log() {
     local level="$1"
-    local message="$2"
-    local timestamp="\033[90m[$(date '+%H:%M:%S')]\033[0m"
+    shift
+    local message="$*"
 
     case "$level" in
         error)
-            echo "\033[31m⏺\033[0m ${timestamp} \033[31m${message}\033[0m"
+            echo "\033[31m${message}\033[0m"
             ;;
         info)
-            echo "\033[37m⏺\033[0m ${timestamp} \033[37m${message}\033[0m"
+            echo "\033[37m${message}\033[0m"
             ;;
         success)
-            echo "\033[33m⏺\033[0m ${timestamp} \033[37m${message}\033[0m"
+            echo "\033[33m${message}\033[0m"
             ;;
         warning)
-            echo "\033[93m⚠️\033[0m ${timestamp} \033[93m${message}\033[0m"
+            echo "\033[93m${message}\033[0m"
             ;;
         *)
             echo "${message}"
