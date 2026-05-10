@@ -17,6 +17,9 @@ function _omp_exec_interactive() {
     cmd=($_OMP_BIN "$@")
     echo
     "${cmd[@]}" < $TTY
+    # Clear buffer and accept empty line to get fresh prompt
+    BUFFER=""
+    CURSOR=0
     zle accept-line
 }
 

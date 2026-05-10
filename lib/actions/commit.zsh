@@ -26,12 +26,13 @@ function _omp_action_commit() {
             # Put git commit command in buffer
             BUFFER="git commit -m ${(qq)msg_line}"
             CURSOR=${#BUFFER}
-            zle reset-prompt
+            BUFFER=""
+            CURSOR=0
+            zle accept-line
             return 0
         fi
     else
-        # Direct commit mode
-        $_OMP_BIN commit
-        _omp_reset
+        # Direct commit mode - use interactive exec for proper terminal handling
+        _omp_exec_interactive commit
     fi
 }

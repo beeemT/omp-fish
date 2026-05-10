@@ -34,12 +34,6 @@ function omp-accept-line() {
     # Add the original command to history before transformation
     print -s -- "$original_buffer"
 
-    # Clear buffer before running action
-    BUFFER=""
-    CURSOR=0
-    zle -I
-    zle reset-prompt
-
     # Dispatch to appropriate action handler
     case "$user_action" in
         new)
@@ -49,6 +43,10 @@ function omp-accept-line() {
             _omp_action_continue "$input_text"
             ;;
         s)
+            # Clear buffer before running suggest
+            BUFFER=""
+            CURSOR=0
+            zle -I
             _omp_action_suggest "$input_text"
             return $?
             ;;
@@ -61,15 +59,29 @@ function omp-accept-line() {
             ;;
         stats)
             _omp_action_stats
-            _omp_reset
             ;;
         help)
             _omp_action_help
-            _omp_reset
+            ;;
+        "")
+            # : <prompt> - default action with prompt text
+            if [[ -n "$input_text" ]]; then
+                _omp_action_default "" "$input_text"
+            else
+                _omp_log warning "Usage: : <prompt>"
+                _omp_reset
+            fi
             ;;
         *)
-            # Default action: : <prompt> or :unknown <prompt>
-            _omp_action_default "$user_action" "$input_text"
+            # Unknown command - check if it has prompt text
+            if [[ -n "$input_text" ]]; then
+                # Treat as prompt with command prefix
+                _omp_action_default "$user_action" "$input_text"
+            else
+                # Unknown command with no prompt - print error
+                _omp_log warning "Unknown command: :$user_action"
+                _omp_reset
+            fi
             ;;
     esac
 

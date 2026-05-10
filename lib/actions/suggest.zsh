@@ -29,18 +29,10 @@ Answer with nothing but the command as plain text.
 Request: $input_text"
     fi
 
-    # Show generating indicator
-    echo -n "Generating command... "
-    zle -I
-    
     # Run omp and capture output
     local result
     result=$($_OMP_BIN --no-pty -p "$prompt")
-    
-    # Clear the generating line
-    echo -ne "\033[2K\r"
-    zle -I
-    
+
     echo "$result" > /tmp/omp-zsh-last-action.txt
     
     if [[ -n "$result" ]]; then

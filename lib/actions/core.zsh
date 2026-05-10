@@ -22,7 +22,23 @@ function _omp_action_new() {
 # Action handler: Show help
 function _omp_action_help() {
     echo
-    $_OMP_BIN --help
+    echo "omp-zsh plugin - Commands for interacting with omp"
+    echo
+    echo "Builtin commands:"
+    echo "  : <prompt>       Send prompt to omp (starts new session if needed)"
+    echo "  :new             Start a new session"
+    echo "  :new <prompt>    Start new session and send prompt"
+    echo "  :c <prompt>      Continue session with context"
+    echo "  :s <prompt>      Suggest a shell command, put it in buffer"
+    echo "  :commit          AI-assisted git commit"
+    echo "  :commit --dry-run  Preview commit message, put git command in buffer"
+    echo "  :stats           Show OMP usage statistics"
+    echo
+    echo "Multiline: Shift+Enter in normal mode"
+    echo
+    BUFFER=""
+    CURSOR=0
+    zle accept-line
 }
 
 # Action handler: Default : prompt (continue or start session)
