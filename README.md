@@ -9,6 +9,18 @@ A zsh plugin for [oh-my-pi](https://github.com/can1357/oh-my-pi) (`omp`). Turns 
 
 ## Install
 
+### Oh My Zsh (Recommended)
+
+```zsh
+# Clone into custom plugins directory
+git clone https://github.com/beeemT/omp-zsh.git ~/.oh-my-zsh/custom/plugins/omp-zsh
+
+# Add to .zshrc plugins list
+plugins=(... omp-zsh)
+```
+
+### Manual
+
 ```zsh
 # Copy plugin files into your zsh config
 mkdir -p ~/.config/zsh/plugins/omp
@@ -18,7 +30,7 @@ git clone https://github.com/beeemT/omp-zsh.git ~/.config/zsh/plugins/omp
 source ~/.config/zsh/plugins/omp/omp.plugin.zsh
 ```
 
-Or using a plugin manager:
+### Plugin Managers
 
 **zinit:**
 ```zsh
@@ -40,12 +52,13 @@ zgen load beeemT/omp-zsh
 
 | Command | Description |
 |---------|-------------|
-| `: <prompt>` | Start or continue an omp session |
-| `:c <prompt>` | Continue session with last command context |
-| `:s <prompt>` | Generate a shell command — output is placed in the buffer |
-| `:new` | Reset session context, start fresh on next prompt |
+| `: <prompt>` | Send prompt to omp (starts new session if needed) |
+| `:new` | Start a new session |
+| `:new <prompt>` | Start new session and send prompt |
+| `:c <prompt>` | Continue session with context (includes last command + exit code) |
+| `:s <prompt>` | Suggest a shell command — output is placed in the buffer |
 | `:commit` | AI-assisted git commit |
-| `:commit --dry-run` | Preview commit without committing |
+| `:commit --dry-run` | Preview commit message, put git command in buffer |
 | `:stats` | Show omp usage statistics |
 | `:help` | List available commands |
 
@@ -58,19 +71,22 @@ zgen load beeemT/omp-zsh
 # Continue the same session
 : and how would I add rate limiting?
 
-# Get a shell command — output lands in your buffer, just press Enter
+# Get a shell command — output lands in your buffer, press Enter to execute
 :s find all .ts files modified in the last week
 
 # Continue with last command context (prepends last command + exit code)
-:c why did this work
+:c why did this fail
 
-# Start fresh
+# Start fresh session
 :new
+
+# Start fresh and send first prompt
+:new explain the middleware pattern
 
 # AI commit
 :commit
 
-# Preview commit message
+# Preview commit message (puts git command in buffer)
 :commit --dry-run
 ```
 
@@ -89,26 +105,24 @@ This is line 3
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `OMP_BIN` | `omp` | Path to OMP CLI binary |
-| `OMP_TERM` | `true` | Enable terminal context capture for `:c` |
 
 ```zsh
 # Custom omp binary location
 export OMP_BIN="/path/to/custom/omp"
-
-# Disable terminal context capture
-export OMP_TERM="false"
 ```
 
-## How it works
+## How it Works
 
-The plugin intercepts `:`-prefixed commands via a ZLE widget and routes them to the OMP CLI:
+The plugin registers a ZLE widget (`omp-accept-line`) that intercepts lines starting with `:`. It parses the command and routes to the appropriate handler:
 
 - `: <prompt>` → `omp "<prompt>"` (new session) or `omp -c "<prompt>"` (continue)
+- `:new` → resets session state; with prompt: `omp "<prompt>"`
 - `:c <prompt>` → `omp -c "<context>\n<prompt>"` (with last command context)
 - `:s <prompt>` → `omp --no-session -p "<prompt>"` (stateless, output to buffer)
-- `:new` → clears session state (no OMP call)
 - `:commit` → `omp commit`
+- `:commit --dry-run` → `omp commit --dry-run`
 - `:stats` → `omp stats`
+- `:help` → displays built-in help text
 
 ## File Structure
 
@@ -118,16 +132,16 @@ omp-zsh/
 ├── lib/
 │   ├── config.zsh           # Configuration variables
 │   ├── dispatcher.zsh       # Main ZLE widget and command routing
-│   ├── helpers.zsh          # Utility functions
+│   ├── helpers.zsh          # Utility functions (_omp_exec_interactive, _omp_log)
 │   ├── context.zsh          # Terminal context capture
 │   ├── bindings.zsh         # Key bindings
 │   ├── completion.zsh       # Completion widget
 │   └── actions/
 │       ├── core.zsh         # :new, :help, default : handling
 │       ├── session.zsh      # :c (continue with context)
-│       ├── suggest.zsh       # :s (command suggestion)
-│       ├── commit.zsh        # :commit, :commit --dry-run
-│       └── stats.zsh         # :stats
+│       ├── suggest.zsh      # :s (command suggestion)
+│       ├── commit.zsh       # :commit, :commit --dry-run
+│       └── stats.zsh        # :stats
 ├── completions/
 │   └── _omp                 # Zsh completion function
 └── README.md
