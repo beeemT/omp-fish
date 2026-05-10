@@ -34,11 +34,6 @@ function omp-accept-line() {
     # Add the original command to history before transformation
     print -s -- "$original_buffer"
 
-
-    # Move cursor to end so output doesn't overwrite
-    CURSOR=${#BUFFER}
-    zle redisplay
-
     # Dispatch to appropriate action handler
     case "$user_action" in
         new)
@@ -48,7 +43,11 @@ function omp-accept-line() {
             _omp_action_continue "$input_text"
             ;;
         s)
-            # :s intentionally modifies BUFFER - return early
+            # For :s, clear buffer immediately to prevent display
+            BUFFER=""
+            CURSOR=0
+            zle -I
+            zle reset-prompt
             _omp_action_suggest "$input_text"
             return $?
             ;;
