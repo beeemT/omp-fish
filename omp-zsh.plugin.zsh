@@ -11,7 +11,12 @@
 0="${${(M)0:#/*}:-$PWD/$0}"
 
 # Configuration variables and defaults
-source "${0:A:h}/lib/config.zsh"
+# Determine plugin root for extension and resource paths.
+# Uses Zsh Plugin Standard $0 resolution so it works both from the
+# repo tree and from the installed ~/.oh-my-zsh/custom/plugins/omp-zsh/
+typeset -g _OMP_ZSH_ROOT="${0:A:h}"
+
+source "${_OMP_ZSH_ROOT}/lib/config.zsh"
 
 # Core utilities (includes logging, _omp_exec)
 source "${0:A:h}/lib/helpers.zsh"

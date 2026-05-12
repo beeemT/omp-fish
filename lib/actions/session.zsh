@@ -12,12 +12,12 @@ function _omp_action_continue() {
     local context=$(_omp_build_context)
 
     if [[ -n "$context" ]]; then
-        # Prepend context to prompt
-        _omp_exec_interactive -c "${context}
+        # Prepend context to prompt (auto-exits after one turn)
+        _omp_exec_interactive_once -c "${context}
 
 ${input_text}"
     else
-        # No context available, just continue
-        _omp_exec_interactive -c "$input_text"
+        # No context available, just continue (auto-exits after one turn)
+        _omp_exec_interactive_once -c "$input_text"
     fi
 }

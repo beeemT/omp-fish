@@ -13,7 +13,7 @@ function _omp_action_new() {
 
     # If input_text is provided, send it as a new session prompt
     if [[ -n "$input_text" ]]; then
-        _omp_exec_interactive "$input_text"
+        _omp_exec_interactive_once "$input_text"
     else
         echo
         _omp_log info "Starting fresh session. Next ': <prompt>' will create a new session."
@@ -63,12 +63,12 @@ function _omp_action_default() {
 
     # Check if this is a fresh session
     if [[ "$_OMP_FRESH_SESSION" == "true" || "$_OMP_SESSION_STARTED" == "false" ]]; then
-        # Fresh session: start new session with bare omp
-        _omp_exec_interactive "$input_text"
+        # Fresh session: start new session with bare omp (auto-exits after one turn)
+        _omp_exec_interactive_once "$input_text"
         _OMP_SESSION_STARTED=true
         _OMP_FRESH_SESSION=false
     else
-        # Existing session: continue with -c
-        _omp_exec_interactive -c "$input_text"
+        # Existing session: continue with -c (auto-exits after one turn)
+        _omp_exec_interactive_once -c "$input_text"
     fi
 }

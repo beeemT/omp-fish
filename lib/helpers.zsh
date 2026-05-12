@@ -23,6 +23,22 @@ function _omp_exec_interactive() {
     zle accept-line
 }
 
+
+
+# Execute omp once with auto-exit after one agent turn.
+# Loads exit-on-turn.ts and sets OMP_EXIT_ON_COMPLETE so the extension
+# gracefully exits omp after the agent finishes generating its response.
+# Used for : <prompt>, :c, :new <prompt>.
+function _omp_exec_interactive_once() {
+    local -a cmd
+    cmd=($_OMP_BIN --extension "$_OMP_ZSH_ROOT/lib/plugins/exit-on-turn.ts" "$@")
+    echo
+    OMP_EXIT_ON_COMPLETE=1 "${cmd[@]}" < $TTY
+    BUFFER=""
+    CURSOR=0
+    zle accept-line
+}
+
 # Reset the prompt state after action completion
 function _omp_reset() {
     BUFFER=""
